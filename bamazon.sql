@@ -10,7 +10,7 @@ CREATE TABLE products (
 item_id INT AUTO_INCREMENT NOT NULL,
 product_name VARCHAR(100) NULL,
 department_name VARCHAR(100) NULL,
-price DECIMAL(10,4) NULL,
+price DECIMAL(10,2) NULL,
 stock_quantity INT NULL,
 PRIMARY KEY (item_id)
 );
@@ -35,3 +35,5 @@ INSERT INTO products (product_name, department_name, price, stock_quantity)
 values ("Nintendo Switch", "Gaming", 299.99, 10 );
 INSERT INTO products (product_name, department_name, price, stock_quantity) 
 values ("Propane Grill", "Outdoor", 499.99, 10 );
+
+SELECT * FROM bamazon.products;
