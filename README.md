@@ -1,6 +1,9 @@
 # Bamazon
 Bamazon is an Amazon-like Node app that takes in orders from customers and depletes stock from the store's inventory.
 
+### App Demo
+![Bamazon.gif](/documentation/Bamazon.gif)
+
 ## Let's Go Shopping!
 On start up, Bamazon asks the shopper to either see all of its products or to quit. When they select "See all products", Bamazon's inventory displays as a table.
 
