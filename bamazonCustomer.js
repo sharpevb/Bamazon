@@ -1,13 +1,12 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
-var Table = require("cli-table");
-
+require("dotenv").config();
 
 var connection = mysql.createConnection({
-    host: "localhost",
+    host: process.env.SQL_HOST,
     port: 3306,
-    user: "root",
-    password: "limegreen3A",
+    user: process.env.SQL_USER,
+    password: process.env.SQL_ID,
     database: "bamazon"
 });
 
@@ -18,46 +17,37 @@ connection.connect(function (err) {
 
 // On run, the app will display:
 function startUp() {
-    console.log("HELLO")
     inquirer.prompt({
         name: "item",
         type: "list",
         message: "Welcome to Bamazon! What would you like to do?",
         choices: ["See all products", "Quit"]
-      })
-      .then(function(answer) {
-        if (answer.item === "See all products") {
-            console.log("\nList of items below:\n")
-            list();
-        }
-        else {
-          connection.end();
-        }
-      });
-  }
+    })
+        .then(function (answer) {
+            if (answer.item === "See all products") {
+                console.log("\nList of items below:\n")
+                list();
+                console.log("\n");
+            }
+            else {
+                connection.end();
+            }
+        });
+}
 
-  function list() {
-      /*var table = new Table({
-        head: ["item_id", "product_name", "price"],
-        colWidths: [10, 20]
-      });
-      table.push(
-        ["First value", "Second value"]
-      , ["First value", "Second value"]
-    );
-    console.log(table.toString());*/
-    
+// List inventory in a table
+function list() {
     connection.query(
         "SELECT item_id, product_name, price FROM products",
         function (err, res) {
             if (err) throw err;
-            console.table(res);   
+            console.table(res);
         },
-
     )
-        buy();    
-  };
+    buy();
+};
 
+// Ask user what product(s) they want to buy
 function buy() {
     inquirer.prompt([{
         type: "input",
@@ -72,16 +62,57 @@ function buy() {
         message: "How many do you need?",
         validate: validateInput,
         filter: Number
-
     }
+    ]).then(function (input) {
 
-]).then
+        var item = input.item_id;
+        var quantity = input.quantity;
+
+        var queryStr = "SELECT * FROM products WHERE ?";
+
+        connection.query(queryStr, {
+            item_id: item
+        }, function (err, data) {
+            if (err) throw err;
+            var productData = data[0];
+
+            if (quantity <= productData.stock_quantity) {
+                console.log("\nThis item is in stock. Placing order now.\n");
+
+                var updateQueryStr = "UPDATE products SET stock_quantity = " + (productData.stock_quantity - quantity) + " WHERE item_id = " + item;
+
+                connection.query(updateQueryStr, function (err, data) {
+                    if (err) throw err;
+
+                    console.log("-----------------------------------------------------------");
+                    console.log("  Your total is $" + total(productData.price * quantity, 2));
+                    console.log("\n  Thank you for shopping with Bamazon. Have a great day!");
+                    console.log("-----------------------------------------------------------\n");
+                    connection.end()
+                });
+
+            } else {
+                console.log("\nSorry, your cannot be placed. There is not enough product in stock.\n");
+                buy();
+
+            }
+        }
+        )
+    })
 }
 
-  /* CODING GRAVEYARD
+function total(num, precision) {
+    let c = Math.pow(10, precision);
+    return Math.trunc(num * c) / c;
+}
 
-  
+function validateInput(val) {
+    var integer = Number.isInteger(parseFloat(val));
+    var sign = Math.sign(val);
 
-
-
-  */
+    if (integer && (sign === 1)) {
+        return true;
+    } else {
+        return "Very funny... Please input a number greater than 0"
+    }
+}
