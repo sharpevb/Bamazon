@@ -92,7 +92,7 @@ function buy() {
                 });
 
             } else {
-                console.log("\nSorry, your cannot be placed. There is not enough product in stock.\n");
+                console.log("\nSorry, your order cannot be placed because of low inventory.\n");
                 buy();
 
             }
